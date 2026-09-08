@@ -26,6 +26,16 @@
   .hint { font-size: 13px; color: #5b6470; background: #f0f4ff; border-left: 3px solid #3b6fe0;
           padding: 10px 12px; border-radius: 6px; margin-top: 20px; }
   .foot { margin-top: 22px; font-size: 12px; color: #9aa1a9; text-align: center; }
+  .tagline { font-size: 13px; color: #8a6d1a; background: #fff8e1; border-radius: 6px;
+             padding: 8px 12px; margin-top: 16px; text-align: center; transition: opacity .4s; }
+  .thanks { margin-top: 22px; padding: 20px 16px; border-radius: 12px; text-align: center;
+            background: #e8f5e9; border: 2px dashed #66bb6a; animation: pop .5s ease; }
+  .thanks-title { font-size: 22px; font-weight: 800; color: #2e7d32; }
+  .thanks-sub { font-size: 13px; color: #558b2f; margin-top: 6px; }
+  .confetti { position: fixed; top: -14px; width: 10px; height: 14px; z-index: 9999;
+              animation: fall 2.4s linear forwards; pointer-events: none; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: .6; } }
+  @keyframes pop { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 </head>
 <body>
@@ -33,6 +43,7 @@
   <h1>Psychology — Bachelor, year 1</h1>
   <p class="sub">Pick your groups and download a calendar with only <em>your</em> practicals
   (plus all lectures that are for everyone).</p>
+  <div class="tagline" id="tagline">Loading wit…</div>
 
   <label for="letter">Statistics Ia computer practical group</label>
   <select id="letter"></select>
@@ -49,6 +60,11 @@
   </div>
 
   <div class="foot">Download the .ics file, then double-click it to add it to your calendar app.</div>
+
+  <div class="thanks" id="thanks" hidden>
+    <div class="thanks-title">Denkjewel, Johannes!</div>
+    <div class="thanks-sub">Your calendar is on its way. May your attendance be statistically significant.</div>
+  </div>
 </div>
 
 <script>
@@ -58,6 +74,46 @@ const letterSel = document.getElementById("letter");
 const numberSel = document.getElementById("number");
 const downloadBtn = document.getElementById("download");
 const countEl = document.getElementById("count");
+const taglineEl = document.getElementById("tagline");
+const thanksEl = document.getElementById("thanks");
+
+const WISDOM = [
+  "Your superego fully approves of this calendar.",
+  "Freud would have a lot to say about how tidy this is.",
+  "Correlation with actually attending lectures: r = 1.00.",
+  "No statistics were harmed in the making of this calendar.",
+  "Warning: may cause you to know where you're supposed to be.",
+  "Clinically reviewed by the id, the ego & the superego.",
+  "Free will not included. Please attend the lecture to find out why.",
+  "This timetable was not repressed. Mostly.",
+  "100% of students who use a calendar also experience time.",
+];
+
+let wi = 0;
+function rotateWisdom() {
+  taglineEl.style.opacity = 0;
+  setTimeout(() => {
+    taglineEl.textContent = WISDOM[wi % WISDOM.length];
+    taglineEl.style.opacity = 1;
+    wi++;
+  }, 400);
+}
+taglineEl.textContent = WISDOM[0];
+setInterval(rotateWisdom, 4500);
+
+function confetti() {
+  for (let i = 0; i < 90; i++) {
+    const d = document.createElement("div");
+    d.className = "confetti";
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+    d.style.animationDelay = Math.random() * 0.5 + "s";
+    d.style.width = (6 + Math.random() * 8) + "px";
+    d.style.height = (8 + Math.random() * 8) + "px";
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 3000);
+  }
+}
 
 function fill(sel, groups) {
   const none = document.createElement("option");
@@ -127,6 +183,10 @@ downloadBtn.addEventListener("click", () => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  thanksEl.hidden = false;
+  thanksEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  confetti();
 });
 
 refresh();
