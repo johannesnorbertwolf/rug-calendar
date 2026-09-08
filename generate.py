@@ -100,7 +100,7 @@ TEMPLATE = r"""<!DOCTYPE html>
                 border: 1px dashed #e0c068; border-radius: 8px; padding: 10px 12px; text-align: center; }
   .tagline { font-size: 13px; color: #8a6d1a; background: #fff8e1; border-radius: 6px;
              padding: 8px 12px; margin-top: 16px; text-align: center; transition: opacity .4s; }
-  .thanks { margin-top: 22px; padding: 20px 16px; border-radius: 12px; text-align: center;
+  .thanks { margin-bottom: 22px; padding: 20px 16px; border-radius: 12px; text-align: center;
             background: linear-gradient(135deg, #c8102e, #ff5e7e); color: #fff;
             box-shadow: 0 6px 20px rgba(200, 16, 46, .35);
             animation: hero-pop .8s cubic-bezier(.175,.885,.32,1.275) both; }
@@ -113,6 +113,10 @@ TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 <div class="card">
+  <div class="thanks" id="thanks" hidden>
+    <div class="thanks-title">Dankjewel, Johannes!</div>
+    <div class="thanks-sub">Your calendar is on its way. May your attendance be statistically significant.</div>
+  </div>
   <h1>Psychology — Bachelor, year 1</h1>
   <p class="sub">Pick your groups and download a calendar with only <em>your</em> practicals
   (plus all lectures that are for everyone).</p>
@@ -134,11 +138,6 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   <div class="foot">Download the .ics file, then double-click it to add it to your calendar app.</div>
   <div class="disclaimer">No psychologists were harmed in the making of this calendar.<br>One statistician was mildly inconvenienced.</div>
-
-  <div class="thanks" id="thanks" hidden>
-    <div class="thanks-title">Dankjewel, Johannes!</div>
-    <div class="thanks-sub">Your calendar is on its way. May your attendance be statistically significant.</div>
-  </div>
 </div>
 
 <script>
