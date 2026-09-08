@@ -98,8 +98,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   .foot { margin-top: 22px; font-size: 12px; color: #9aa1a9; text-align: center; }
   .disclaimer { margin-top: 16px; font-size: 12px; color: #8a6d1a; background: #fff8e1;
                 border: 1px dashed #e0c068; border-radius: 8px; padding: 10px 12px; text-align: center; }
-  .tagline { font-size: 13px; color: #8a6d1a; background: #fff8e1; border-radius: 6px;
-             padding: 8px 12px; margin-top: 16px; text-align: center; transition: opacity .4s; }
   .thanks { margin-bottom: 22px; padding: 20px 16px; border-radius: 12px; text-align: center;
             background: linear-gradient(135deg, #c8102e, #ff5e7e); color: #fff;
             box-shadow: 0 6px 20px rgba(200, 16, 46, .35);
@@ -120,7 +118,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   <h1>Psychology — Bachelor, year 1</h1>
   <p class="sub">Pick your groups and download a calendar with only <em>your</em> practicals
   (plus all lectures that are for everyone).</p>
-  <div class="tagline" id="tagline">Loading wit…</div>
 
   <label for="letter">Statistics Ia computer practical group</label>
   <select id="letter"></select>
@@ -147,32 +144,7 @@ const letterSel = document.getElementById("letter");
 const numberSel = document.getElementById("number");
 const downloadBtn = document.getElementById("download");
 const countEl = document.getElementById("count");
-const taglineEl = document.getElementById("tagline");
 const thanksEl = document.getElementById("thanks");
-
-const WISDOM = [
-  "Your superego fully approves of this calendar.",
-  "Freud would have a lot to say about how tidy this is.",
-  "Correlation with actually attending lectures: r = 1.00.",
-  "No statistics were harmed in the making of this calendar.",
-  "Warning: may cause you to know where you're supposed to be.",
-  "Clinically reviewed by the id, the ego & the superego.",
-  "Free will not included. Please attend the lecture to find out why.",
-  "This timetable was not repressed. Mostly.",
-  "100% of students who use a calendar also experience time.",
-];
-
-let wi = 0;
-function rotateWisdom() {
-  taglineEl.style.opacity = 0;
-  setTimeout(() => {
-    taglineEl.textContent = WISDOM[wi % WISDOM.length];
-    taglineEl.style.opacity = 1;
-    wi++;
-  }, 400);
-}
-taglineEl.textContent = WISDOM[0];
-setInterval(rotateWisdom, 4500);
 
 function confetti() {
   for (let i = 0; i < 90; i++) {
