@@ -129,7 +129,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="foot">Download the .ics file, then double-click it to add it to your calendar app.</div>
 
   <div class="thanks" id="thanks" hidden>
-    <div class="thanks-title">Denkjewel, Johannes!</div>
+    <div class="thanks-title">Dankjewel, Johannes!</div>
     <div class="thanks-sub">Your calendar is on its way. May your attendance be statistically significant.</div>
   </div>
 </div>
