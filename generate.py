@@ -102,6 +102,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   .hint { font-size: 13px; color: #5b6470; background: #f0f4ff; border-left: 3px solid #3b6fe0;
           padding: 10px 12px; border-radius: 6px; margin-top: 20px; }
   .foot { margin-top: 22px; font-size: 12px; color: #9aa1a9; text-align: center; }
+  .disclaimer { margin-top: 16px; font-size: 12px; color: #8a6d1a; background: #fff8e1;
+                border: 1px dashed #e0c068; border-radius: 8px; padding: 10px 12px; text-align: center; }
   .tagline { font-size: 13px; color: #8a6d1a; background: #fff8e1; border-radius: 6px;
              padding: 8px 12px; margin-top: 16px; text-align: center; transition: opacity .4s; }
   .thanks { margin-top: 22px; padding: 20px 16px; border-radius: 12px; text-align: center;
@@ -140,7 +142,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <div class="foot">Download the .ics file, then double-click it to add it to your calendar app.</div>
-  <div class="foot" style="margin-top:8px">No psychologists were harmed. One statistician was mildly inconvenienced.</div>
+  <div class="disclaimer">No psychologists were harmed in the making of this calendar.<br>One statistician was mildly inconvenienced.</div>
 
   <div class="thanks" id="thanks" hidden>
     <div class="thanks-title">Dankjewel, Johannes!</div>
