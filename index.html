@@ -45,7 +45,7 @@
 
   <div class="hint">
     Not sure of your groups? They look like <b>GR-L</b> (letter) and <b>GR2610</b> (number)
-    and are shown on Brightspace. You can also pick “None”.
+    and are shown on Brightspace.
   </div>
 
   <div class="foot">Download the .ics file, then double-click it to add it to your calendar app.</div>
@@ -62,7 +62,9 @@ const countEl = document.getElementById("count");
 function fill(sel, groups) {
   const none = document.createElement("option");
   none.value = "";
-  none.textContent = "— none —";
+  none.textContent = "Choose your group…";
+  none.disabled = true;
+  none.selected = true;
   sel.appendChild(none);
   for (const g of groups) {
     const o = document.createElement("option");
@@ -78,8 +80,12 @@ fill(numberSel, DATA.number_groups);
 function refresh() {
   const letter = letterSel.value;
   const number = numberSel.value;
-  const picked = (letter ? 1 : 0) + (number ? 1 : 0);
-  downloadBtn.disabled = picked === 0;
+  const ready = letter !== "" && number !== "";
+  downloadBtn.disabled = !ready;
+  if (!ready) {
+    countEl.textContent = "Choose both groups to continue.";
+    return;
+  }
   let n = 0;
   for (const [desc] of DATA.events) {
     if (desc.startsWith("[GR")) {
@@ -88,9 +94,7 @@ function refresh() {
       n++;
     }
   }
-  countEl.textContent = picked === 0
-    ? "Choose at least one group to continue."
-    : `${n} events will be in your calendar.`;
+  countEl.textContent = `${n} events will be in your calendar.`;
 }
 
 letterSel.addEventListener("change", refresh);
