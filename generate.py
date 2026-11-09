@@ -5,27 +5,50 @@ practical groups and download a personalized .ics calendar.
 Usage:
     python3 generate.py <source.ics> [output.html]
 
-The source is the RUG Maat schedule feed (text/calendar)."""
+The source is the RUG Maat schedule feed (text/calendar).
+
+Term 2 notes:
+- The group marker lives in the SUMMARY (title), not DESCRIPTION.
+- Letter groups are per-block; only Statistics IB matters now.
+- Two modes: full calendar (from today) or just the Statistics IB practicals.
+"""
 
 import json
 import re
 import sys
 
 
+def unfold(s: str) -> str:
+    return re.sub(r"\r?\n[ \t]", "", s)
+
+
+def prop(block: str, name: str) -> str:
+    m = re.search(r"^" + name + r"[^:]*:(.*)$", block, re.M)
+    return unfold(m.group(1).strip()) if m else ""
+
+
 def parse(raw: str):
-    events = re.findall(r"BEGIN:VEVENT.*?END:VEVENT", raw, re.DOTALL)
-    header = raw[: raw.find("BEGIN:VEVENT")].rstrip("\n") + "\n"
-    footer = "\n" + raw[raw.rfind("END:VEVENT") + len("END:VEVENT") :].lstrip("\n")
+    lines = raw.splitlines()
+    ul = []
+    for ln in lines:
+        if ln[:1] in (" ", "\t") and ul:
+            ul[-1] += ln[1:]
+        else:
+            ul.append(ln)
+    clean = "\n".join(ul) + "\n"
+
+    events = re.findall(r"BEGIN:VEVENT.*?END:VEVENT", clean, re.DOTALL)
+    header = clean[: clean.find("BEGIN:VEVENT")].rstrip("\n") + "\n"
+    footer = "\n" + clean[clean.rfind("END:VEVENT") + len("END:VEVENT") :].lstrip("\n")
     return header, events, footer
-
-
-def desc_of(event: str) -> str:
-    m = re.search(r"^DESCRIPTION[^:]*:(.*)$", event, re.M)
-    return m.group(1).strip() if m else ""
 
 
 def natural_key(value: str):
     return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", value)]
+
+
+LETTER_RE = re.compile(r"\[GR-[A-Z]\]")
+NUMBER_RE = re.compile(r"\[GR\d{4}\]")
 
 
 def main():
@@ -33,22 +56,32 @@ def main():
     out = sys.argv[2] if len(sys.argv) > 2 else "index.html"
 
     raw = open(src, encoding="utf-8", errors="replace").read().replace("\r\n", "\n")
-
     header, events, footer = parse(raw)
-    data = [[desc_of(e), e] for e in events]
 
-    letter_groups = sorted(
-        {d for d, _ in data if re.fullmatch(r"\[GR-[A-Z]\]", d)}, key=natural_key
+    data = []
+    for e in events:
+        summary = prop(e, "SUMMARY")
+        date = prop(e, "DTSTART")[:8]
+        data.append([summary, date, e])
+
+    ib_letters = sorted(
+        {
+            LETTER_RE.search(s).group(0)
+            for s, _, _ in data
+            if "Statistics IB" in s and LETTER_RE.search(s)
+        },
+        key=natural_key,
     )
     number_groups = sorted(
-        {d for d, _ in data if re.fullmatch(r"\[GR\d{4}\]", d)}, key=natural_key
+        {NUMBER_RE.search(s).group(0) for s, _, _ in data if NUMBER_RE.search(s)},
+        key=natural_key,
     )
 
     payload = {
         "header": header,
         "events": data,
         "footer": footer,
-        "letter_groups": letter_groups,
+        "ib_letters": ib_letters,
         "number_groups": number_groups,
     }
 
@@ -61,8 +94,8 @@ def main():
 
     print(f"wrote {out}")
     print(f"  events: {len(events)}")
-    print(f"  letter groups: {len(letter_groups)}")
-    print(f"  number groups: {len(number_groups)}")
+    print(f"  Statistics IB letter groups: {len(ib_letters)}")
+    print(f"  numbered groups: {len(number_groups)}")
 
 
 TEMPLATE = r"""<!DOCTYPE html>
@@ -84,11 +117,17 @@ TEMPLATE = r"""<!DOCTYPE html>
                         60% { transform: scale(1.08) rotate(1deg); }
                         100% { transform: scale(1) rotate(0); opacity: 1; } }
   h1 { font-size: 22px; margin: 0 0 6px; }
-  p.sub { color: #5b6470; font-size: 14px; margin: 0 0 24px; }
-  label { display: block; font-weight: 600; font-size: 14px; margin: 18px 0 6px; }
+  p.sub { color: #5b6470; font-size: 14px; margin: 0 0 20px; }
+  .mode { border: 1px solid #e0e4e8; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .mode label { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+                font-weight: 500; font-size: 14px; cursor: pointer; }
+  .mode label + label { border-top: 1px solid #e0e4e8; }
+  .mode label input { margin-top: 3px; }
+  .mode .desc { display: block; font-weight: 400; color: #5b6470; font-size: 12px; margin-top: 2px; }
+  .field label { display: block; font-weight: 600; font-size: 14px; margin: 16px 0 6px; }
   select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd2d9;
            border-radius: 8px; background: #fff; }
-  button { width: 100%; margin-top: 28px; padding: 14px; font-size: 16px; font-weight: 700;
+  button { width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; font-weight: 700;
            color: #fff; background: #c8102e; border: none; border-radius: 8px; cursor: pointer; }
   button:hover { background: #a50d26; }
   button:disabled { background: #cbd2d9; cursor: not-allowed; }
@@ -116,20 +155,34 @@ TEMPLATE = r"""<!DOCTYPE html>
     <div class="thanks-sub">Your calendar is on its way. May your attendance be statistically significant.</div>
   </div>
   <h1>Psychology — Bachelor, year 1</h1>
-  <p class="sub">Pick your groups and download a calendar with only <em>your</em> practicals
-  (plus all lectures that are for everyone).</p>
+  <p class="sub">Pick your groups and download a calendar with only <em>your</em> practicals.</p>
 
-  <label for="letter">Statistics Ia computer practical group</label>
-  <select id="letter"></select>
+  <div class="mode">
+    <label>
+      <input type="radio" name="mode" value="full" checked>
+      <span>Full calendar<span class="desc">Everything from today on — lectures, exams and my practicals.</span></span>
+    </label>
+    <label>
+      <input type="radio" name="mode" value="practical">
+      <span>Only my Statistics IB practicals<span class="desc">If you already have a calendar and are just missing the IB tutorials.</span></span>
+    </label>
+  </div>
 
-  <label for="number">Academic Skills practical group</label>
-  <select id="number"></select>
+  <div class="field">
+    <label for="letter">Statistics IB group</label>
+    <select id="letter"></select>
+  </div>
+
+  <div class="field" id="numberField">
+    <label for="number">Practical group (Academic Skills &amp; Research Methods)</label>
+    <select id="number"></select>
+  </div>
 
   <button id="download" disabled>Download my calendar (.ics)</button>
   <div class="count" id="count"></div>
 
   <div class="hint">
-    Not sure of your groups? They look like <b>GR-L</b> (letter) and <b>GR2610</b> (number)
+    Not sure of your groups? They look like <b>GR-N</b> (Statistics IB) and <b>GR2610</b> (practical)
     and are shown on Brightspace.
   </div>
 
@@ -142,9 +195,11 @@ const DATA = __DATA__;
 
 const letterSel = document.getElementById("letter");
 const numberSel = document.getElementById("number");
+const numberField = document.getElementById("numberField");
 const downloadBtn = document.getElementById("download");
 const countEl = document.getElementById("count");
 const thanksEl = document.getElementById("thanks");
+const modeRadios = document.querySelectorAll('input[name="mode"]');
 
 function confetti() {
   for (let i = 0; i < 90; i++) {
@@ -175,50 +230,78 @@ function fill(sel, groups) {
   }
 }
 
-fill(letterSel, DATA.letter_groups);
+fill(letterSel, DATA.ib_letters);
 fill(numberSel, DATA.number_groups);
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+}
+
+function mode() {
+  for (const r of modeRadios) if (r.checked) return r.value;
+  return "full";
+}
+
+function groupMarker(summary) {
+  const m = summary.match(/\[GR[^\]]*\]/);
+  return m ? m[0] : null;
+}
+function isLetter(marker) { return /^\[GR-[A-Z]\]$/.test(marker); }
+
+function keepEvent(summary, date, letter, number, m) {
+  const marker = groupMarker(summary);
+  if (m === "practical") {
+    return summary.indexOf("Statistics IB") !== -1 &&
+           summary.indexOf("Computer practical") !== -1 &&
+           marker === letter;
+  }
+  if (date < todayStr()) return false;
+  if (!marker) return true;
+  if (isLetter(marker)) {
+    return summary.indexOf("Statistics IB") !== -1 && marker === letter;
+  }
+  return marker === number;
+}
 
 function refresh() {
   const letter = letterSel.value;
   const number = numberSel.value;
-  const ready = letter !== "" && number !== "";
+  const m = mode();
+  numberField.style.display = m === "full" ? "" : "none";
+  const ready = m === "full" ? (letter !== "" && number !== "") : (letter !== "");
   downloadBtn.disabled = !ready;
   if (!ready) {
-    countEl.textContent = "Choose both groups to continue.";
+    countEl.textContent = m === "full" ? "Choose both groups to continue." : "Choose your Statistics IB group.";
     return;
   }
   let n = 0;
-  for (const [desc] of DATA.events) {
-    if (desc.startsWith("[GR")) {
-      if (desc === letter || desc === number) n++;
-    } else {
-      n++;
-    }
+  for (const [summary, date] of DATA.events) {
+    if (keepEvent(summary, date, letter, number, m)) n++;
   }
-  countEl.textContent = `${n} events will be in your calendar.`;
+  countEl.textContent = m === "full"
+    ? `${n} events will be in your calendar (from today).`
+    : `${n} practical sessions will be added.`;
 }
 
+for (const r of modeRadios) r.addEventListener("change", refresh);
 letterSel.addEventListener("change", refresh);
 numberSel.addEventListener("change", refresh);
 
 downloadBtn.addEventListener("click", () => {
   const letter = letterSel.value;
   const number = numberSel.value;
+  const m = mode();
   const parts = [DATA.header];
-  for (const [desc, block] of DATA.events) {
-    if (desc.startsWith("[GR")) {
-      if (desc === letter || desc === number) parts.push(block);
-    } else {
-      parts.push(block);
-    }
+  for (const [summary, date, block] of DATA.events) {
+    if (keepEvent(summary, date, letter, number, m)) parts.push(block);
   }
   parts.push(DATA.footer);
   const ics = parts.join("\n");
 
-  const name = "rug-schedule" +
-    (letter ? "-" + letter.replace(/[[\]]/g, "") : "") +
-    (number ? "-" + number.replace(/[[\]]/g, "") : "") +
-    ".ics";
+  const name = m === "full"
+    ? "rug-schedule-" + letter.replace(/[[\]]/g, "") + "-" + number.replace(/[[\]]/g, "") + ".ics"
+    : "rug-statistics-ib-" + letter.replace(/[[\]]/g, "") + ".ics";
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
