@@ -24,6 +24,8 @@
   .mode label + label { border-top: 1px solid #e0e4e8; }
   .mode label input { margin-top: 3px; }
   .mode .desc { display: block; font-weight: 400; color: #5b6470; font-size: 12px; margin-top: 2px; }
+  .rec { display: inline-block; font-size: 11px; font-weight: 700; color: #fff;
+         background: #c8102e; border-radius: 4px; padding: 2px 6px; margin-left: 6px; vertical-align: middle; }
   .field label { display: block; font-weight: 600; font-size: 14px; margin: 16px 0 6px; }
   select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd2d9;
            border-radius: 8px; background: #fff; }
@@ -60,11 +62,11 @@
   <div class="mode">
     <label>
       <input type="radio" name="mode" value="full" checked>
-      <span>Full calendar<span class="desc">Everything from today on — lectures, exams and my practicals.</span></span>
+      <span>Full calendar <span class="rec">Recommended</span><span class="desc">Everything from today on — lectures, exams and my practicals. First remove your old calendar, then add this one.</span></span>
     </label>
     <label>
       <input type="radio" name="mode" value="practical">
-      <span>Only my Statistics IB practicals<span class="desc">If you already have a calendar and are just missing the IB tutorials.</span></span>
+      <span>Only my Statistics IB practicals<span class="desc">If you'd rather keep your old calendar — this only adds the missing IB tutorials.</span></span>
     </label>
   </div>
 
